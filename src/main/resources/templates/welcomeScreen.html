@@ -1,1 +1,204 @@
-<!DOCTYPE html>
+<!DOCTYPE HTML>
+
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <title>Welcome | Client Verification UI | LogSentinel</title>
+    <link rel="stylesheet" type="text/css" href="webjars/bootstrap/4.1.1/css/bootstrap.min.css">
+    <link rel="stylesheet" th:href="@{/css/main.css}" href="../../css/main.css">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}" href="../../css/dashboard.css">
+    <link rel="stylesheet" th:href="@{/css/vis.css}" href="../../css/vis.css">
+
+    <style type="text/css">
+        #mynetwork {
+            width: 100%;
+            height: 800px;
+            border: 1px solid lightgray;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-dark fixed-top bg-dark flex-md-nowrap p-0 shadow">
+        <a class="navbar-brand col-sm-3 col-md-2 mr-0" href="#">LogSentinel</a>
+        <input class="form-control form-control-dark w-100" type="text" placeholder="Search hash" aria-label="Search">
+        <ul class="navbar-nav px-3">
+            <li class="nav-item text-nowrap">
+                <a class="nav-link" href="#" data-toggle="modal" data-target="#loginScreen">Sign in</a>
+            </li>
+        </ul>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <nav class="col-md-2 d-none d-md-block bg-light sidebar">
+                <div class="sidebar-sticky">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="#">
+                                <span data-feather="home"></span>
+                                Dashboard <span class="sr-only">(current)</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">
+                                <span data-feather="file"></span>
+                                Verify inclusion
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">
+                                <span data-feather="shopping-cart"></span>
+                                Verify consistency
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-4">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">Dashboard</h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <div class="form-group">
+                            <label for="exampleFormControlSelect2">Application ID</label>
+                            <select class="form-control" th:if="${applications != null}">
+                                <option th:each="item : ${applications}" th:text="${item}"></option>
+                                </ul>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="button" class="btn btn-dark" onclick="colorNodes([7,6,2]);">color</button>
+                <div id="mynetwork"></div>
+            </main>
+        </div>
+    </div>
+
+    <div class="modal fade" id="loginScreen" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Authentication</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    Please enter your API credentials in order to proceed. <a href="https://app.logsentinel.com/api-credentials">Click here</a> to view your API credentials.<br><br>
+                    <form action="/" method="get">
+                        <div class="form-group">
+                            <label for="organizationId">Organization ID</label>
+                            <input type="test" class="form-control" id="organizationId" name="organizationId"
+                                   placeholder="87094578-894f-a5e8-ae09-3f6e0ac53f22">
+                        </div>
+                        <div class="form-group">
+                            <label for="secret">Secret</label>
+                            <input type="password" class="form-control" id="secret" name="secret"
+                                   placeholder="7394750f5a5e4ab0037dc70609bb011974fdf194a9caceb939b192d29cc9f7d7">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Log in</button>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript" src="webjars/jquery/3.3.1/jquery.min.js"></script>
+    <script type="text/javascript" src="webjars/bootstrap/4.1.1/js/bootstrap.min.js"></script>
+    <script type="text/javascript" th:src="@{/js/vis.min.js}" src="../../js/vis.min.js"></script>
+    <script>
+        $('#myModal').on('shown.bs.modal', function () {
+            $('#myInput').trigger('focus')
+        })
+    </script>
+    <script>
+    var network ;
+    var nodes;
+    var edges;
+
+    $(document).ready(function () {
+    // create an array with nodes
+        nodes = new vis.DataSet([
+            {id: 1, label: 'O', hash: '_XtRdD98Zq2SK8lfcEKZDwOkEFxobbyxQ4NUgMuI1-G6qu6LeMFul-uOGE1Sx9ecRHZRtGlT0Te-Z6ierliQNg=='},
+            {id: 2, label: '2', hash: 'lpbhvoiyCS5M4NhO_qnCLNE064gLm_iw7vxx678WGFfbv8ThL9D9SBUUzRk1swizeEYhKSyHr0O8ZMbtME6SYQ=='},
+            {id: 3, label: '3', hash: '6RK_IpNKUuDEaTXxcDfX3FG6Okg5SGfNFZysBEsPUErKycQrtDIz3use1p8edZ4tzX_9JRim8mnGTjbt12BZ0A=='},
+            {id: 4, label: '-4', hash: '-D5KjVY7d6njTrKU5C-LE3d0SXepKQnffbonkGpXFtNP9-TnaynUS2vTYgyAotZMN-8f5q63LJYG7k8nIg6TJw=='},
+            {id: 5, label: '5', hash: '_XtRdD98Zq2SK8lfcEKZDwOkEFxobbyxQ4NUgMuI1-G6qu6LeMFul-uOGE1Sx9ecRHZRtGlT0Te-Z6ierliQNg=='},
+            {id: 6, label: '6', hash: '_XtRdD98Zq2SK8lfcEKZDwOkEFxobbyxQ4NUgMuI1-G6qu6LeMFul-uOGE1Sx9ecRHZRtGlT0Te-Z6ierliQNg=='},
+            {id: 7, label: '7-', hash: '_XtRdD98Zq2SK8lfcEKZDwOkEFxobbyxQ4NUgMuI1-G6qu6LeMFul-uOGE1Sx9ecRHZRtGlT0Te-Z6ierliQNg=='},
+            {id: 8, label: '8-', hash: '_XtRdD98Zq2SK8lfcEKZDwOkEFxobbyxQ4NUgMuI1-G6qu6LeMFul-uOGE1Sx9ecRHZRtGlT0Te-Z6ierliQNg=='}
+        ]);
+
+        // create an array with edges
+        edges = new vis.DataSet([
+            {from: 1, to: 3},
+            {from: 1, to: 2},
+            {from: 2, to: 4},
+            {from: 2, to: 5},
+            {from: 3, to: 6},
+            {from: 3, to: 7},
+            {from: 1, to: 8}
+        ]);
+
+        // create a network
+        var container = document.getElementById('mynetwork');
+
+        // provide the data in the vis format
+        var data = {
+            nodes: nodes,
+            edges: edges
+        };
+        var options = {
+            layout: {
+
+                improvedLayout:true,
+                hierarchical: {
+                  enabled:true,
+                  levelSeparation: 100,
+                  nodeSpacing: 100,
+                  treeSpacing: 100,
+                  blockShifting: true,
+                  edgeMinimization: true,
+                  parentCentralization: true,
+                  direction: 'UD',        // UD, DU, LR, RL
+                  sortMethod: 'directed'   // hubsize, directed
+                }
+             }
+        };
+
+        // initialize your network!
+        var network = new vis.Network(container, data, options);
+
+        network.on('click',  function (params) {
+
+            // parse node id
+            var nodeId = params['nodes']['0'];
+            if(nodeId){
+                alert(nodes.get(nodeId).hash);
+            }
+        });
+
+    });
+
+    function colorNodes(ids){
+            for(var i in ids){
+                var node = nodes.get(ids[i]);
+                node.color ={
+                  background: 'red',
+                  highlight: {
+                    background: 'red'
+                  }
+
+                }
+                nodes.update(node);
+            }
+
+     }
+    </script>
+</body>
+</html>
