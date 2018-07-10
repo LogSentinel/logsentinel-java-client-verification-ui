@@ -4,9 +4,9 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class LogsentinelJavaClientVerificationUiApplication {
+public class LogSentinelClientUiApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(LogsentinelJavaClientVerificationUiApplication.class, args);
+		SpringApplication.run(LogSentinelClientUiApplication.class, args);
 	}
 }
