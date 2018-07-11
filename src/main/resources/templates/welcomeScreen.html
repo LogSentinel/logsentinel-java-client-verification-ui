@@ -166,6 +166,18 @@
             edges.add(mapN.edges);
             nodes.add(mapN.nodes);
 
+            for(var i in mapN.inclusionProof){
+                var node2 = nodes.get(mapN.inclusionProof[i] - 1);
+
+                node2.borderWidth = 3;
+
+                node2.color ={
+                  border: '#2B7CE9'
+                }
+
+                nodes.update(node2);
+            }
+
             for(var i in mapN.leaves){
                 var node = nodes.get(mapN.leaves[i]);
 
@@ -184,7 +196,7 @@
             var nodeId = params['nodes']['0'];
 
             if(nodeId){
-                alert(nodes.get(nodeId).hash);
+                alert(nodes.get(nodeId).id);
             }
         });
 

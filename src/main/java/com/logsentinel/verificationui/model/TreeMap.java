@@ -6,11 +6,13 @@ public class TreeMap {
     public List<Edge> edges;
     public List<Node> nodes;
     public List<Integer> leaves;
+    public List<Integer> inclusionProof;
 
-    public TreeMap(List<Edge> edges, List<Node> nodes, List<Integer> leaves) {
+    public TreeMap(List<Edge> edges, List<Node> nodes, List<Integer> leaves, List<Integer> inclusionProof) {
         this.edges = edges;
         this.nodes = nodes;
         this.leaves = leaves;
+        this.inclusionProof = inclusionProof;
     }
 
     public List<Edge> getEdges() {
@@ -35,5 +37,13 @@ public class TreeMap {
 
     public void setLeaves(List<Integer> leaves) {
         this.leaves = leaves;
+    }
+
+    public List<Integer> getInclusionProof() {
+        return inclusionProof;
+    }
+
+    public void setInclusionProof(List<Integer> inclusionProof) {
+        this.inclusionProof = inclusionProof;
     }
 }
