@@ -10,7 +10,7 @@
     <link rel="stylesheet" th:href="@{/css/vis.css}" href="../../css/vis.css">
 
     <style type="text/css">
-        #mynetwork {
+        #merkleTreeVis {
             width: 100%;
             height: 800px;
             border: 1px solid lightgray;
@@ -80,7 +80,7 @@
                     </div>
                 </div><br>
 
-                <div id="mynetwork"></div>
+                <div id="merkleTreeVis"></div>
             </main>
         </div>
     </div>
@@ -127,31 +127,24 @@
         })
     </script>
 
-    <!--<script th:remove="tag" th:utext="${map}"></script>-->
-
     <script>
     var network;
     var edges;
     var nodes;
 
     $(document).ready(function () {
-    // create an array with nodes
-        var data;
-
         nodes = new vis.DataSet();
 		edges = new vis.DataSet();
 
-        // create a network
-        var container = document.getElementById('mynetwork');
+        var container = document.getElementById('merkleTreeVis');
 
-        // provide the data in the vis format
         var data = {
             nodes: nodes,
             edges: edges
         };
+
         var options = {
             layout: {
-
                 improvedLayout:true,
                 hierarchical: {
                   enabled:true,
@@ -161,47 +154,41 @@
                   blockShifting: true,
                   edgeMinimization: true,
                   parentCentralization: true,
-                  direction: 'UD',        // UD, DU, LR, RL
-                  sortMethod: 'directed'   // hubsize, directed
+                  direction: 'UD',
+                  sortMethod: 'directed'
                 }
              }
         };
 
-        // initialize your network!
-        // var network = new vis.Network(container, data, options);
+        var network = new vis.Network(container, data, options);
 
-        var network = new vis.Network(container,data,options);
+        $.getJSON('http://localhost:8090/map?treeSize=[[${treeSize}]]', function(mapN) {
+            edges.add(mapN.edges);
+            nodes.add(mapN.nodes);
 
-			$.getJSON('http://localhost:8090/map?treeSize=[[${treeSize}]]', function(mapN) {
-				edges.add(mapN.edges);
-				nodes.add(mapN.nodes);
-				colorNodes(mapN.leaves);
-			});
+            for(var i in mapN.leaves){
+                var node = nodes.get(mapN.leaves[i]);
 
-        network.on('click',  function (params) {
-
-            // parse node id
-            var nodeId = params['nodes']['0'];
-            if(nodeId){
-                alert(nodes.get(nodeId).hash);
-            }
-        });
-
-    });
-
-    function colorNodes(ids){
-            for(var i in ids){
-                var node = nodes.get(ids[i]);
                 node.color ={
                   background: '#0d7cab'
                 }
                 node.font ={
                   color: '#ffffff'
                 }
+
                 nodes.update(node);
             }
+        });
 
-     }
+        network.on('click',  function (params) {
+            var nodeId = params['nodes']['0'];
+
+            if(nodeId){
+                alert(nodes.get(nodeId).hash);
+            }
+        });
+
+    });
     </script>
 </body>
 </html>
