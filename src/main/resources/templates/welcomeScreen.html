@@ -69,7 +69,17 @@
                     </div>
                 </div>
 
-                <button type="button" class="btn btn-dark" onclick="colorNodes([7,6,2]);">color</button>
+                <div class="card" th:if="${applicationId != null}">
+                    <div class="card-header">
+                        Log status
+                    </div>
+                    <div class="card-body">
+                        Status: <b style="color: green; font-weight: normal;">OKAY</b><br>
+                        Current tree size: <i th:text="${treeSize}">0</i><br>
+                        Current MTH: <i th:text="${rootHash}">N/A</i>
+                    </div>
+                </div><br>
+
                 <div id="mynetwork"></div>
             </main>
         </div>
@@ -116,34 +126,20 @@
             $('#myInput').trigger('focus')
         })
     </script>
+
+    <!--<script th:remove="tag" th:utext="${map}"></script>-->
+
     <script>
-    var network ;
-    var nodes;
+    var network;
     var edges;
+    var nodes;
 
     $(document).ready(function () {
     // create an array with nodes
-        nodes = new vis.DataSet([
-            {id: 1, label: 'O', hash: '_XtRdD98Zq2SK8lfcEKZDwOkEFxobbyxQ4NUgMuI1-G6qu6LeMFul-uOGE1Sx9ecRHZRtGlT0Te-Z6ierliQNg=='},
-            {id: 2, label: '2', hash: 'lpbhvoiyCS5M4NhO_qnCLNE064gLm_iw7vxx678WGFfbv8ThL9D9SBUUzRk1swizeEYhKSyHr0O8ZMbtME6SYQ=='},
-            {id: 3, label: '3', hash: '6RK_IpNKUuDEaTXxcDfX3FG6Okg5SGfNFZysBEsPUErKycQrtDIz3use1p8edZ4tzX_9JRim8mnGTjbt12BZ0A=='},
-            {id: 4, label: '-4', hash: '-D5KjVY7d6njTrKU5C-LE3d0SXepKQnffbonkGpXFtNP9-TnaynUS2vTYgyAotZMN-8f5q63LJYG7k8nIg6TJw=='},
-            {id: 5, label: '5', hash: '_XtRdD98Zq2SK8lfcEKZDwOkEFxobbyxQ4NUgMuI1-G6qu6LeMFul-uOGE1Sx9ecRHZRtGlT0Te-Z6ierliQNg=='},
-            {id: 6, label: '6', hash: '_XtRdD98Zq2SK8lfcEKZDwOkEFxobbyxQ4NUgMuI1-G6qu6LeMFul-uOGE1Sx9ecRHZRtGlT0Te-Z6ierliQNg=='},
-            {id: 7, label: '7-', hash: '_XtRdD98Zq2SK8lfcEKZDwOkEFxobbyxQ4NUgMuI1-G6qu6LeMFul-uOGE1Sx9ecRHZRtGlT0Te-Z6ierliQNg=='},
-            {id: 8, label: '8-', hash: '_XtRdD98Zq2SK8lfcEKZDwOkEFxobbyxQ4NUgMuI1-G6qu6LeMFul-uOGE1Sx9ecRHZRtGlT0Te-Z6ierliQNg=='}
-        ]);
+        var data;
 
-        // create an array with edges
-        edges = new vis.DataSet([
-            {from: 1, to: 3},
-            {from: 1, to: 2},
-            {from: 2, to: 4},
-            {from: 2, to: 5},
-            {from: 3, to: 6},
-            {from: 3, to: 7},
-            {from: 1, to: 8}
-        ]);
+        nodes = new vis.DataSet();
+		edges = new vis.DataSet();
 
         // create a network
         var container = document.getElementById('mynetwork');
@@ -172,7 +168,15 @@
         };
 
         // initialize your network!
-        var network = new vis.Network(container, data, options);
+        // var network = new vis.Network(container, data, options);
+
+        var network = new vis.Network(container,data,options);
+
+			$.getJSON('http://localhost:8090/map?treeSize=[[${treeSize}]]', function(mapN) {
+				edges.add(mapN.edges);
+				nodes.add(mapN.nodes);
+				colorNodes(mapN.leaves);
+			});
 
         network.on('click',  function (params) {
 
@@ -189,11 +193,10 @@
             for(var i in ids){
                 var node = nodes.get(ids[i]);
                 node.color ={
-                  background: 'red',
-                  highlight: {
-                    background: 'red'
-                  }
-
+                  background: '#0d7cab'
+                }
+                node.font ={
+                  color: '#ffffff'
                 }
                 nodes.update(node);
             }

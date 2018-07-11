@@ -1,8 +1,8 @@
 package com.logsentinel.verificationui.web;
 
-import com.logsentinel.ApiException;
 import com.logsentinel.LogSentinelClient;
 import com.logsentinel.LogSentinelClientBuilder;
+import com.logsentinel.client.model.TreeHead;
 import com.logsentinel.verificationui.LogSentinelClientUiApplication;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,10 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 @Controller
 public class WelcomeScreenController {
@@ -43,14 +40,19 @@ public class WelcomeScreenController {
                 if (applications.size() > 0) {
                     model.put("applications", applicationsString);
                     model.put("applicationId", applicationsString.get(0));
+
+                    TreeHead treeHead = client.getVerificationActions().getLatestTreeHead(applicationsString.get(0));
+
+                    model.put("treeSize", treeHead.getTreeSize());
+                    model.put("rootHash", treeHead.getRootHash());
                 }
+
+
             }
         }
         catch (Exception e){
             logger.error("Error: " + e.getMessage());
         }
-
-        model.put("message", organizationId);
 
         return "welcomeScreen";
     }
