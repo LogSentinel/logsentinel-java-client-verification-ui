@@ -18,13 +18,23 @@ public class WelcomeScreenController {
     private static final Logger logger = LoggerFactory.getLogger(LogSentinelClientUiApplication.class);
 
     @RequestMapping(value = "/", method = RequestMethod.GET)
-    public String welcome(@RequestParam("organizationId") String organizationId,
-                          @RequestParam("secret") String secret,
+    public String welcome(@RequestParam("organizationId") Optional<String> organizationId,
+                          @RequestParam("secret") Optional<String> secret,
+                          @RequestParam("applicationId") Optional<String> applicationId,
+                          @RequestParam("etherscanApiKey") Optional<String> etherscanApiKey,
                           Map<String, Object> model) {
         try {
-            if (organizationId != null && secret != null) {
+            if (organizationId.isPresent() && secret.isPresent()) {
+                model.put("organizationId", organizationId.get());
+                model.put("secret", secret.get());
+
+                if (etherscanApiKey.isPresent()) {
+                    model.put("etherscanApiKey", etherscanApiKey.get());
+                    model.put("etherScanApiKeyCheckbox", true);
+                }
+
                 LogSentinelClientBuilder builder = LogSentinelClientBuilder
-                        .create(null, organizationId, secret);
+                        .create(null, organizationId.get(), secret.get());
                 builder.setBasePath("http://localhost:8080");
 
                 LogSentinelClient client = builder.build();
@@ -33,25 +43,52 @@ public class WelcomeScreenController {
                 List<UUID> applications = client.getApplicationActions().getApplications();
 
                 for (UUID application : applications) {
-                    logger.info("Error: " + application.toString());
                     applicationsString.add(application.toString());
                 }
 
                 if (applications.size() > 0) {
                     model.put("applications", applicationsString);
-                    model.put("applicationId", applicationsString.get(0));
-
-                    TreeHead treeHead = client.getVerificationActions().getLatestTreeHead(applicationsString.get(0));
-
-                    model.put("treeSize", treeHead.getTreeSize());
-                    model.put("rootHash", treeHead.getRootHash());
                 }
 
+                if (applicationId.isPresent()) {
+                    model.put("applicationId", applicationId.get());
+                    TreeHead treeHead = client.getVerificationActions().getLatestTreeHead(applicationId.get());
 
+                    model.put("treeSize", treeHead.getTreeSize());
+
+                    if (treeHead.getTreeSize() > 0) {
+                        model.put("rootHash", treeHead.getRootHash());
+                    }
+                    else {
+                        model.put("rootHash", "N/A");
+                    }
+
+                }
+                else if (applications.size() > 0) {
+                    TreeHead treeHead = client.getVerificationActions().getLatestTreeHead(applicationsString.get(0));
+
+                    if (treeHead.getTreeSize() > 0) {
+                        model.put("rootHash", treeHead.getRootHash());
+                    }
+                    else {
+                        model.put("rootHash", "N/A");
+                    }
+                }
+
+                model.put("authorized", true);
+            }
+            else {
+                model.put("authorized", false);
             }
         }
         catch (Exception e){
-            logger.error("Error: " + e.getMessage());
+            if (e.getMessage() != null) {
+                if (e.getMessage().equals("Unauthorized")) {
+                    model.put("authorizedReason", "wrongCredentials");
+                }
+            }
+
+            model.put("authorized", false);
         }
 
         return "welcomeScreen";

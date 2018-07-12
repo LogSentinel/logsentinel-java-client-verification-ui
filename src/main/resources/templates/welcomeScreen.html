@@ -8,14 +8,6 @@
     <link rel="stylesheet" th:href="@{/css/main.css}" href="../../css/main.css">
     <link rel="stylesheet" th:href="@{/css/dashboard.css}" href="../../css/dashboard.css">
     <link rel="stylesheet" th:href="@{/css/vis.css}" href="../../css/vis.css">
-
-    <style type="text/css">
-        #merkleTreeVis {
-            width: 100%;
-            height: 800px;
-            border: 1px solid lightgray;
-        }
-    </style>
 </head>
 <body>
     <nav class="navbar navbar-dark fixed-top bg-dark flex-md-nowrap p-0 shadow">
@@ -23,7 +15,7 @@
         <input class="form-control form-control-dark w-100" type="text" placeholder="Search hash" aria-label="Search">
         <ul class="navbar-nav px-3">
             <li class="nav-item text-nowrap">
-                <a class="nav-link" href="#" data-toggle="modal" data-target="#loginScreen">Sign in</a>
+                <a class="nav-link" href="#" data-toggle="modal" data-target="#loginScreen" id="signInButton">Sign in</a>
             </li>
         </ul>
     </nav>
@@ -60,16 +52,32 @@
                     <h1 class="h2">Dashboard</h1>
                     <div class="btn-toolbar mb-2 mb-md-0">
                         <div class="form-group">
-                            <label for="exampleFormControlSelect2">Application ID</label>
-                            <select class="form-control" th:if="${applications != null}">
-                                <option th:each="item : ${applications}" th:text="${item}"></option>
+                            <label for="applicationIdSelect">Application ID</label>
+                            <select class="form-control" id="applicationIdSelect" th:if="${applications != null}">
+                                <option th:each="item : ${applications}" th:text="${item}" th:selected="${applicationId == item}"></option>
                                 </ul>
                             </select>
                         </div>
                     </div>
                 </div>
 
-                <div class="card" th:if="${applicationId != null}">
+                <div class="card mb-3" th:if="${applicationId == null}">
+                    <div class="card-header text-white bg-danger">Authentication required</div>
+                    <div class="card-body">
+                        <h5 class="card-title">You have not entered your organization's API credentials</h5>
+                        <p class="card-text">Please log in using the button in the upper right corner of this window or <a href="#" data-toggle="modal" data-target="#loginScreen">click here</a>.</p>
+                    </div>
+                </div>
+
+                <div class="card mb-3" th:if="${authorized == false}">
+                    <div class="card-header text-white bg-danger">Authentication required</div>
+                    <div class="card-body">
+                        <h5 class="card-title">Wrong API credentials</h5>
+                        <p class="card-text">The provided API credentials are not valid. Please enter your organization's API credentials again.</p>
+                    </div>
+                </div>
+
+                <div class="card" th:if="${applicationId != null && authorized}">
                     <div class="card-header">
                         Log status
                     </div>
@@ -80,7 +88,34 @@
                     </div>
                 </div><br>
 
-                <div id="merkleTreeVis"></div>
+                <div class="card" th:if="${applicationId != null && authorized && treeSize > 0 && treeSize < 1000}">
+                    <div class="card-header">
+                        Merkle tree visualization
+                    </div>
+                    <div class="card-body">
+                        <div id="merkleTreeVis" style="width: 100%; height: 800px;"></div>
+                    </div>
+                </div><br>
+
+                <div class="card" th:if="${applicationId != null && authorized && etherscanApiKey != null}">
+                    <div class="card-header">
+                        Historical MTHs
+                    </div>
+                    <div class="card-body">
+                        <table class="table" id="etherMths">
+                            <thead>
+                            <tr>
+                                <th scope="col">MTH</th>
+                                <th scope="col">Time stamp</th>
+                                <th scope="col">Block number</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                                <tr></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div><br>
             </main>
         </div>
     </div>
@@ -96,22 +131,37 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    Please enter your API credentials in order to proceed. <a href="https://app.logsentinel.com/api-credentials">Click here</a> to view your API credentials.<br><br>
+                    Please enter your API credentials in order to proceed. <a href="https://app.logsentinel.com/api-credentials" target="_blank">Click here</a> to view your API credentials.<br><br>
                     <form action="/" method="get">
                         <div class="form-group">
                             <label for="organizationId">Organization ID</label>
-                            <input type="test" class="form-control" id="organizationId" name="organizationId"
+                            <input type="text" class="form-control" id="organizationId" name="organizationId" th:value="${organizationId}"
                                    placeholder="87094578-894f-a5e8-ae09-3f6e0ac53f22">
                         </div>
                         <div class="form-group">
                             <label for="secret">Secret</label>
-                            <input type="password" class="form-control" id="secret" name="secret"
+                            <input type="password" class="form-control" id="secret" name="secret" th:value="${secret}"
                                    placeholder="7394750f5a5e4ab0037dc70609bb011974fdf194a9caceb939b192d29cc9f7d7">
                         </div>
-                        <button type="submit" class="btn btn-primary">Log in</button>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="" id="connectEtherscan" th:checked="${etherScanApiKeyCheckbox}">
+                            <label class="form-check-label" for="connectEtherscan">
+                                I would like to search in Ethereum's blockchain for Merkle Tree Hashes (MTHs)
+                            </label>
+                        </div>
+                        <div class="form-group" style="margin-top: 12px;" id="etherScanApiKeyPanel">
+                            <label for="etherscanApiKey">etherscan.io API key</label>
+                            <input type="text" class="form-control" id="etherscanApiKey" name="etherscanApiKey"
+                                   placeholder="UIBWILBIUY23OIHU89098HLUIihYUHi897" th:value="${etherscanApiKey}">
+                            <small id="etherscanApiKeyHelp" class="form-text text-muted">Please visit <a href="https://etherscan.io/" target="_blank">etherscan.io</a> and create your personal API-Key token.</small>
+                        </div>
+                        <input type="hidden" name="applicationId" id="applicationId" th:value="${applicationId}">
+                        <div style="display: flex; justify-content: flex-end;">
+                            <button type="submit" class="btn btn-primary">Log in</button>
+                        </div>
                     </form>
                 </div>
-                <div class="modal-footer">
+                <div class="modal-footer" style="justify-content: flex-start;">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                 </div>
             </div>
@@ -127,12 +177,74 @@
         })
     </script>
 
+
+    <script th:if="${etherscanApiKey != null}">
+    $(document).ready(function () {
+        $("#signInButton").text("Signed in");
+    });
+    </script>
+
+    <script th:if="${authorized}">
+    $(document).ready(function () {
+        $("#signInButton").text("Signed in");
+    });
+    </script>
+
+    <script th:if="${etherscanApiKey == null}">
+    $(document).ready(function () {
+        $('#etherScanApiKeyPanel').hide();
+    });
+    </script>
+
+    <script th:if="${etherscanApiKey != null}">
+    $(document).ready(function () {
+        var applicationId = "45d05c20-7595-11e8-a5f4-e50e8178b4ba";
+        // var applicationId = "[[${applicationId}]]";
+
+        $.getJSON('http://localhost:8090/ether?organizationId=' + applicationId + '&etherscanApiKey=[[${etherscanApiKey}]]', function(mths) {
+            $.each(mths, function(i, item) {
+                $("#etherMths tbody").append('<tr><td>' + item.hash + '</td><td>' + item.timestamp + '</td><td>' + item.blockNumber + '</td></tr>');
+             });
+        });
+    });
+    </script>
+
+    <script th:if="${applicationId != null}">
+    $(document).ready(function () {
+        $('#applicationId').value="[[${applicationId}]]";
+    });
+    </script>
+
     <script>
     var network;
     var edges;
     var nodes;
 
     $(document).ready(function () {
+        $('#connectEtherscan').change(function() {
+            if ($('#connectEtherscan').prop('checked')) {
+                $('#etherScanApiKeyPanel').show();
+            } else {
+                $('#etherScanApiKeyPanel').hide();
+            }
+        });
+
+        $('#applicationIdSelect').change(function() {
+            var hash;
+            var queryString = "";
+            var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
+            for(var i = 0; i < hashes.length; i++)
+            {
+                hash = hashes[i].split('=');
+                if (hash[0] != "applicationId") {
+                    queryString += hash[0] + "=" + hash[1] + "&";
+                }
+            }
+
+            window.location=window.location.protocol + "//" + window.location.host + "/?" + queryString +
+            "applicationId=" + $('#applicationIdSelect').find(":selected").text();
+        });
+
         nodes = new vis.DataSet();
 		edges = new vis.DataSet();
 
