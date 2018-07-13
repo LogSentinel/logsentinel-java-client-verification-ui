@@ -1,9 +1,11 @@
 package com.logsentinel.verificationui.web;
 
+import com.logsentinel.ApiException;
 import com.logsentinel.LogSentinelClient;
 import com.logsentinel.LogSentinelClientBuilder;
-import com.logsentinel.client.model.TreeHead;
 import com.logsentinel.verificationui.LogSentinelClientUiApplication;
+import com.logsentinel.verificationui.data.InclusionProofData;
+import com.logsentinel.verificationui.data.MthData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -22,16 +24,26 @@ public class WelcomeScreenController {
                           @RequestParam("secret") Optional<String> secret,
                           @RequestParam("applicationId") Optional<String> applicationId,
                           @RequestParam("etherscanApiKey") Optional<String> etherscanApiKey,
+                          @RequestParam("hash") Optional<String> hash,
                           Map<String, Object> model) {
         try {
-            if (organizationId.isPresent() && secret.isPresent()) {
+            model.put("inclusionProof", false);
+            model.put("leafIndex", -1);
+
+            if (!organizationId.isPresent() || !secret.isPresent()) {
+                model.put("signedIn", false);
+                model.put("authorized", false);
+            }
+            else {
+                model.put("signedIn", true);
+
                 model.put("organizationId", organizationId.get());
                 model.put("secret", secret.get());
 
-                if (etherscanApiKey.isPresent()) {
-                    model.put("etherscanApiKey", etherscanApiKey.get());
-                    model.put("etherScanApiKeyCheckbox", true);
-                }
+                Boolean authorized = false;
+
+                etherscanApiKey.ifPresent(s -> model.put("etherscanApiKey", s));
+                hash.ifPresent(s -> model.put("hash", s));
 
                 LogSentinelClientBuilder builder = LogSentinelClientBuilder
                         .create(null, organizationId.get(), secret.get());
@@ -39,46 +51,48 @@ public class WelcomeScreenController {
 
                 LogSentinelClient client = builder.build();
 
-                List<String> applicationsString = new ArrayList<>();
-                List<UUID> applications = client.getApplicationActions().getApplications();
+                List<UUID> applications = new ArrayList<>();
 
-                for (UUID application : applications) {
-                    applicationsString.add(application.toString());
-                }
-
-                if (applications.size() > 0) {
-                    model.put("applications", applicationsString);
-                }
-
-                if (applicationId.isPresent()) {
-                    model.put("applicationId", applicationId.get());
-                    TreeHead treeHead = client.getVerificationActions().getLatestTreeHead(applicationId.get());
-
-                    model.put("treeSize", treeHead.getTreeSize());
-
-                    if (treeHead.getTreeSize() > 0) {
-                        model.put("rootHash", treeHead.getRootHash());
-                    }
-                    else {
-                        model.put("rootHash", "N/A");
-                    }
-
-                }
-                else if (applications.size() > 0) {
-                    TreeHead treeHead = client.getVerificationActions().getLatestTreeHead(applicationsString.get(0));
-
-                    if (treeHead.getTreeSize() > 0) {
-                        model.put("rootHash", treeHead.getRootHash());
-                    }
-                    else {
-                        model.put("rootHash", "N/A");
+                try {
+                    applications = client.getApplicationActions().getApplications();
+                    authorized = true;
+                } catch (ApiException e) {
+                    if (e.getCode() == 401) {
+                        model.put("wrongCredentials", true);
                     }
                 }
 
-                model.put("authorized", true);
-            }
-            else {
-                model.put("authorized", false);
+                model.put("authorized", authorized);
+
+                if (authorized) {
+                    String selectedApplicationId = "";
+
+                    if (applications.size() > 0) {
+                        model.put("applications", applications);
+                    }
+
+                    if (applicationId.isPresent()) {
+                        selectedApplicationId = applicationId.get();
+                    } else {
+                        if (applications.size() > 0) {
+                            selectedApplicationId = applications.get(0).toString();
+                        }
+                    }
+
+                    model.put("applicationId", selectedApplicationId);
+
+                    if (!selectedApplicationId.equals("")) {
+                        MthData.getLatestMth(client, selectedApplicationId, model);
+
+                        if (hash.isPresent()) {
+                            if (hash.get().length() != 0) {
+                                model.replace("inclusionProof", true);
+
+                                InclusionProofData.getInclusionProof(client, hash.get(), selectedApplicationId, model);
+                            }
+                        }
+                    }
+                }
             }
         }
         catch (Exception e){
@@ -88,7 +102,11 @@ public class WelcomeScreenController {
                 }
             }
 
+            model.put("signedIn", false);
             model.put("authorized", false);
+
+            model.put("inclusionProof", false);
+            model.put("leafIndex", -1);
         }
 
         return "welcomeScreen";
