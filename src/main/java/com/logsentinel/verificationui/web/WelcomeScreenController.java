@@ -4,6 +4,7 @@ import com.logsentinel.ApiException;
 import com.logsentinel.LogSentinelClient;
 import com.logsentinel.LogSentinelClientBuilder;
 import com.logsentinel.verificationui.LogSentinelClientUiApplication;
+import com.logsentinel.verificationui.data.ConsistencyProofData;
 import com.logsentinel.verificationui.data.InclusionProofData;
 import com.logsentinel.verificationui.data.MthData;
 import org.slf4j.Logger;
@@ -25,9 +26,11 @@ public class WelcomeScreenController {
                           @RequestParam("applicationId") Optional<String> applicationId,
                           @RequestParam("etherscanApiKey") Optional<String> etherscanApiKey,
                           @RequestParam("hash") Optional<String> hash,
+                          @RequestParam("mth") Optional<String> mth,
                           Map<String, Object> model) {
         try {
             model.put("inclusionProof", false);
+            model.put("consistencyProof", false);
             model.put("leafIndex", -1);
 
             if (!organizationId.isPresent() || !secret.isPresent()) {
@@ -43,7 +46,6 @@ public class WelcomeScreenController {
                 Boolean authorized = false;
 
                 etherscanApiKey.ifPresent(s -> model.put("etherscanApiKey", s));
-                hash.ifPresent(s -> model.put("hash", s));
 
                 LogSentinelClientBuilder builder = LogSentinelClientBuilder
                         .create(null, organizationId.get(), secret.get());
@@ -85,10 +87,20 @@ public class WelcomeScreenController {
                         MthData.getLatestMth(client, selectedApplicationId, model);
 
                         if (hash.isPresent()) {
-                            if (hash.get().length() != 0) {
+                            if (hash.get().length() > 0) {
                                 model.replace("inclusionProof", true);
 
                                 InclusionProofData.getInclusionProof(client, hash.get(), selectedApplicationId, model);
+                            }
+                        }
+
+                        if (mth.isPresent()) {
+                            if (mth.get().length() > 0) {
+                                model.replace("consistencyProof", true);
+
+                                ConsistencyProofData.getConsistencyProof(client, mth.get(),
+                                        "xOiKaHY62bvYLgn1csGuph5UQprE8UVBboZsvKjS6YU",
+                                        selectedApplicationId, model);
                             }
                         }
                     }
@@ -106,6 +118,7 @@ public class WelcomeScreenController {
             model.put("authorized", false);
 
             model.put("inclusionProof", false);
+            model.put("consistencyProof", false);
             model.put("leafIndex", -1);
         }
 

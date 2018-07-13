@@ -15,7 +15,7 @@
         <input class="form-control form-control-dark w-100" type="text" placeholder="Search by audit log entry hash or ID" aria-label="Search" th:value="${hash}" id="searchHash">
         <ul class="navbar-nav px-3">
             <li class="nav-item text-nowrap">
-                <a class="nav-link" href="#" data-toggle="modal" data-target="#loginScreen" id="signInButton">Sign in</a>
+                <a class="nav-link" href="javascript:void(0);" data-toggle="modal" data-target="#loginScreen" id="signInButton">Sign in</a>
             </li>
         </ul>
     </nav>
@@ -26,19 +26,19 @@
                 <div class="sidebar-sticky">
                     <ul class="nav flex-column">
                         <li class="nav-item">
-                            <a class="nav-link active" href="#" id="dashboardLink">
+                            <a class="nav-link" href="javascript:void(0);" id="dashboardLink">
                                 <span data-feather="home"></span>
                                 Dashboard <span class="sr-only">(current)</span>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="#" id="inclusionLink">
+                            <a class="nav-link" href="javascript:void(0);" id="inclusionLink">
                                 <span data-feather="file"></span>
                                 Verify inclusion
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="#">
+                            <a class="nav-link" href="javascript:void(0);">
                                 <span data-feather="shopping-cart"></span>
                                 Verify consistency
                             </a>
@@ -65,7 +65,7 @@
                     <div class="card-header text-white bg-danger">Authentication required</div>
                     <div class="card-body">
                         <h5 class="card-title">You have not entered your organization's API credentials</h5>
-                        <p class="card-text">Please log in using the button in the upper right corner of this window or <a href="#" data-toggle="modal" data-target="#loginScreen">click here</a>.</p>
+                        <p class="card-text">Please log in using the button in the upper right corner of this window or <a href="javascript:void(0);" data-toggle="modal" data-target="#loginScreen">click here</a>.</p>
                     </div>
                 </div>
 
@@ -74,6 +74,22 @@
                     <div class="card-body">
                         <h5 class="card-title">Wrong API credentials</h5>
                         <p class="card-text">The provided API credentials are not valid. Please enter your organization's API credentials again.</p>
+                    </div>
+                </div>
+
+                <div class="card" th:if="${signedIn && authorized && consistencyProof}">
+                    <div th:if="${consistencyProof && consistencyProofVerification}" class="card-header text-white bg-success">Consistency proof</div>
+                    <div th:if="${consistencyProof && !consistencyProofVerification}" class="card-header text-white bg-danger">Consistency proof</div>
+                    <div class="card-body">
+                        Status: <b th:if="${consistencyProof && consistencyProofVerification}"
+                                   style="color: green; font-weight: normal;">CONSISTENT</b>
+                        <b th:if="${consistencyProof && errorMessage != null}"
+                           style="color: red; font-weight: normal;" th:text="${errorMessage}">ERROR</b>
+
+                        <p th:if="${error != null}">Message: <b style="font-weight: normal;" th:text="${error}">0</b></p>
+
+                        <p th:if="${firstTreeHash != null && firstTreeSize != null}">First MTH: [<b style="font-weight: normal;" th:text="${firstTreeSize}">0</b>] <b style="font-weight: normal;" th:text="${firstTreeHash}">0</b></p>
+                        <p th:if="${secondTreeHash != null && secondTreeSize != null}">Second MTH: [<b style="font-weight: normal;" th:text="${secondTreeSize}">0</b>] <b style="font-weight: normal;" th:text="${secondTreeHash}">0</b></p>
                     </div>
                 </div>
 
@@ -105,7 +121,7 @@
                     </div>
                 </div>
 
-                <div class="card" th:if="${signedIn && applicationId != null && authorized}">
+                <div class="card" th:if="${signedIn && authorized && applicationId != null}">
                     <div class="card-header">
                         Log status
                     </div>
@@ -117,7 +133,7 @@
                     </div>
                 </div>
 
-                <div class="card" th:if="${signedIn && applicationId != null && authorized && treeSize > 0 && treeSize < 1000}">
+                <div class="card" th:if="${signedIn && authorized && applicationId != null && treeSize > 0 && treeSize < 1000}">
                     <div class="card-header">
                         Merkle tree visualization
                     </div>
@@ -126,12 +142,12 @@
                     </div>
                 </div>
 
-                <div class="card" th:if="${signedIn && applicationId != null && authorized && etherscanApiKey != null}">
+                <div class="card" th:if="${signedIn && authorized && applicationId != null}">
                     <div class="card-header">
                         Historical MTHs
                     </div>
                     <div class="card-body">
-                        <table class="table" id="etherMths">
+                        <table class="table" style="margin-bottom: 20px;" id="etherMths" th:if="${signedIn && applicationId != null && authorized && etherscanApiKey != null}">
                             <thead>
                             <tr>
                                 <th scope="col">MTH</th>
@@ -143,6 +159,13 @@
                                 <tr></tr>
                             </tbody>
                         </table>
+                        <div class="form-group">
+                            <label for="mth">Merkle Tree Head (MTH)</label>
+                            <input type="text" class="form-control" id="mth">
+                        </div>
+                        <div style="display: flex; justify-content: flex-end;">
+                            <button type="button" class="btn btn-primary" data-dismiss="modal" id="checkConsistency">Check consistency</button>
+                        </div>
                     </div>
                 </div><br>
             </main>
@@ -220,13 +243,17 @@
 
     <script th:if="${signedIn && authorized && etherscanApiKey != null}">
     $(document).ready(function () {
-        var applicationId = "45d05c20-7595-11e8-a5f4-e50e8178b4ba";
-        // var applicationId = "[[${applicationId}]]";
+        var applicationId = "[[${applicationId}]]";
 
-        $.getJSON('http://localhost:8090/ether?organizationId=' + applicationId + '&etherscanApiKey=[[${etherscanApiKey}]]', function(mths) {
-            $.each(mths, function(i, item) {
-                $("#etherMths tbody").append('<tr><td>' + item.hash + '</td><td>' + item.timestamp + '</td><td><a href="https://ropsten.etherscan.io/txs?block=' + item.blockNumber + '" target="_blank">' + item.blockNumber + '</a></td></tr>');
-             });
+        $.getJSON('http://localhost:8091/ether?organizationId=' + applicationId + '&etherscanApiKey=[[${etherscanApiKey}]]', function(mths) {
+            if (mths.length == 0) {
+                $("#etherMths tbody").append('<tr><td></td><td><i>No data found</i></td><td></td></tr>');
+            }
+            else {
+                $.each(mths, function(i, item) {
+                    $("#etherMths tbody").append('<tr><td>' + item.hash + '</td><td>' + item.timestamp + '</td><td><a href="https://ropsten.etherscan.io/txs?block=' + item.blockNumber + '" target="_blank">' + item.blockNumber + '</a></td></tr>');
+                });
+            }
         });
     });
     </script>
@@ -243,21 +270,20 @@
     var nodes;
     var leafIndex = [[${leafIndex}]];
 
-    function filterUrl(ignoreParam) {
-        var hash2;
-        var queryString2 = "";
-        var hashes2 = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
+    function filterUrl(ignoreParams) {
+        var urlQuery = "";
+        var parameters = window.location.href.replace('#','').slice(window.location.href.indexOf('?') + 1).split('&');
 
-        for(var i = 0; i < hashes2.length; i++)
+        for(var i = 0; i < parameters.length; i++)
         {
-            hash2 = hashes2[i].split('=');
+            var parameter = parameters[i].split('=');
 
-            if (hash2[0] != ignoreParam) {
-                queryString2 += hash2[0] + "=" + hash2[1] + "&";
+            if (jQuery.inArray(parameter[0], ignoreParams) == -1) {
+                urlQuery += parameter[0] + "=" + parameter[1] + "&";
             }
         }
 
-        return queryString2.substring(0, queryString2.length - 1);
+        return urlQuery.substring(0, urlQuery.length - 1);
     }
 
     $(document).ready(function () {
@@ -269,47 +295,32 @@
             }
         });
 
-        $("#dashboardLink").attr("href", "/?" + filterUrl("hash"));
+        $("#dashboardLink").attr("href", "/?" + filterUrl(["hash", "mth"]));
 
         $("#inclusionLink").click(function() {
             $("#searchHash").val("");
             $("#searchHash").focus();
         });
 
+        $("#consistencyLink").click(function() {
+            $("#mth").focus();
+        });
+
+        $("#checkConsistency").click(function() {
+            window.location=window.location.protocol + "//" + window.location.host + "/?" + filterUrl(["hash", "mth"]) +
+                    "&mth=" + $('#mth').val();
+        });
+
         $('#searchHash').on('keypress', function (e) {
             if(e.which === 13){
-                var hash2;
-                var queryString2 = "";
-                var hashes2 = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
-
-                for(var i = 0; i < hashes2.length; i++)
-                {
-                    hash2 = hashes2[i].split('=');
-
-                    if (hash2[0] != "hash") {
-                        queryString2 += hash2[0] + "=" + hash2[1] + "&";
-                    }
-                }
-
-                window.location=window.location.protocol + "//" + window.location.host + "/?" + queryString2 +
-                    "hash=" + $('#searchHash').val();
+                window.location=window.location.protocol + "//" + window.location.host + "/?" + filterUrl(["hash", "mth"]) +
+                    "&hash=" + $('#searchHash').val();
             }
         });
 
         $('#applicationIdSelect').change(function() {
-            var hash;
-            var queryString = "";
-            var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
-            for(var i = 0; i < hashes.length; i++)
-            {
-                hash = hashes[i].split('=');
-                if (hash[0] != "applicationId") {
-                    queryString += hash[0] + "=" + hash[1] + "&";
-                }
-            }
-
-            window.location=window.location.protocol + "//" + window.location.host + "/?" + queryString +
-                "applicationId=" + $('#applicationIdSelect').find(":selected").text();
+            window.location=window.location.protocol + "//" + window.location.host + "/?" + filterUrl(["applicationId"]) +
+                "&applicationId=" + $('#applicationIdSelect').find(":selected").text();
         });
 
         nodes = new vis.DataSet();
