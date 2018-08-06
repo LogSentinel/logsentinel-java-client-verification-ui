@@ -2,11 +2,13 @@ package com.logsentinel.verificationui;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.PropertySource;
 
 @SpringBootApplication
-public class LogsentinelJavaClientVerificationUiApplication {
+@PropertySource("classpath:/application.properties")
+public class LogSentinelClientUiApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(LogsentinelJavaClientVerificationUiApplication.class, args);
+		SpringApplication.run(LogSentinelClientUiApplication.class, args);
 	}
 }
