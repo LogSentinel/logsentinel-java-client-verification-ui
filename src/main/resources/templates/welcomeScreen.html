@@ -245,7 +245,7 @@
     $(document).ready(function () {
         var applicationId = "[[${applicationId}]]";
 
-        $.getJSON('http://localhost:8091/ether?organizationId=' + applicationId + '&etherscanApiKey=[[${etherscanApiKey}]]', function(mths) {
+        $.getJSON('/ether?organizationId=' + applicationId + '&etherscanApiKey=[[${etherscanApiKey}]]', function(mths) {
             if (mths.length == 0) {
                 $("#etherMths tbody").append('<tr><td></td><td><i>No data found</i></td><td></td></tr>');
             }
@@ -352,7 +352,7 @@
 
         var network = new vis.Network(container, data, options);
 
-        $.getJSON('http://localhost:8090/map?treeSize=[[${treeSize}]]&leafIndex=[[${leafIndex}]]', function(mapN) {
+        $.getJSON('/map?treeSize=[[${treeSize}]]&leafIndex=[[${leafIndex}]]', function(mapN) {
             edges.add(mapN.edges);
             nodes.add(mapN.nodes);
 

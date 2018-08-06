@@ -1,5 +1,19 @@
 package com.logsentinel.verificationui.web;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+
 import com.logsentinel.ApiException;
 import com.logsentinel.LogSentinelClient;
 import com.logsentinel.LogSentinelClientBuilder;
@@ -7,19 +21,14 @@ import com.logsentinel.verificationui.LogSentinelClientUiApplication;
 import com.logsentinel.verificationui.data.ConsistencyProofData;
 import com.logsentinel.verificationui.data.InclusionProofData;
 import com.logsentinel.verificationui.data.MthData;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-
-import java.util.*;
 
 @Controller
 public class WelcomeScreenController {
     private static final Logger logger = LoggerFactory.getLogger(LogSentinelClientUiApplication.class);
 
+    @Value("${logsentinel.root}")
+    private String logsentinelRoot;
+    
     @RequestMapping(value = "/", method = RequestMethod.GET)
     public String welcome(@RequestParam("organizationId") Optional<String> organizationId,
                           @RequestParam("secret") Optional<String> secret,
@@ -49,7 +58,7 @@ public class WelcomeScreenController {
 
                 LogSentinelClientBuilder builder = LogSentinelClientBuilder
                         .create(null, organizationId.get(), secret.get());
-                builder.setBasePath("http://localhost:8080");
+                builder.setBasePath(logsentinelRoot);
 
                 LogSentinelClient client = builder.build();
 
