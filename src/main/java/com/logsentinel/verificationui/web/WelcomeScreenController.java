@@ -76,13 +76,13 @@ public class WelcomeScreenController {
                 model.put("authorized", authorized);
 
                 if (authorized) {
-                    String selectedApplicationId = "";
+                    String selectedApplicationId = null;
 
                     if (applications.size() > 0) {
                         model.put("applications", applications);
                     }
 
-                    if (applicationId.isPresent()) {
+                    if (applicationId.map(id -> !id.isEmpty()).orElse(false)) {
                         selectedApplicationId = applicationId.get();
                     } else {
                         if (applications.size() > 0) {
@@ -92,7 +92,7 @@ public class WelcomeScreenController {
 
                     model.put("applicationId", selectedApplicationId);
 
-                    if (!selectedApplicationId.equals("")) {
+                    if (selectedApplicationId != null) {
                         MthData.getLatestMth(client, selectedApplicationId, model);
 
                         if (hash.isPresent()) {
@@ -115,14 +115,8 @@ public class WelcomeScreenController {
                     }
                 }
             }
-        }
-        catch (Exception e){
-            if (e.getMessage() != null) {
-                if (e.getMessage().equals("Unauthorized")) {
-                    model.put("authorizedReason", "wrongCredentials");
-                }
-            }
-
+        } catch (Exception e){
+            logger.warn("Failed to performe request", e);
             model.put("signedIn", false);
             model.put("authorized", false);
 

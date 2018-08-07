@@ -312,8 +312,8 @@
         });
 
         $('#searchHash').on('keypress', function (e) {
-            if(e.which === 13){
-                window.location=window.location.protocol + "//" + window.location.host + "/?" + filterUrl(["hash", "mth"]) +
+            if (e.which === 13){
+                window.location= "/?" + filterUrl(["hash", "mth"]) +
                     "&hash=" + $('#searchHash').val();
             }
         });
