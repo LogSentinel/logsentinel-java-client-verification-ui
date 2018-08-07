@@ -243,9 +243,9 @@
 
     <script th:if="${signedIn && authorized && etherscanApiKey != null}">
     $(document).ready(function () {
-        var applicationId = "[[${applicationId}]]";
+        var applicationId = $("#applicationIdSelect").val();
 
-        $.getJSON('/ether?organizationId=' + applicationId + '&etherscanApiKey=[[${etherscanApiKey}]]', function(mths) {
+        $.getJSON('/ether?applicationId=' + applicationId + '&etherscanApiKey=[[${etherscanApiKey}]]', function(mths) {
             if (mths.length == 0) {
                 $("#etherMths tbody").append('<tr><td></td><td><i>No data found</i></td><td></td></tr>');
             }
