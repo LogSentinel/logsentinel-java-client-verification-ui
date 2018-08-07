@@ -1,5 +1,15 @@
 package com.logsentinel.verificationui.data;
 
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.logsentinel.ApiException;
 import com.logsentinel.LogSentinelClient;
 import com.logsentinel.client.model.AuditLogEntry;
@@ -9,9 +19,9 @@ import com.logsentinel.merkletree.utils.CryptoUtils;
 import com.logsentinel.merkletree.verification.InclusionProofVerifier;
 import com.logsentinel.util.StringUtil;
 
-import java.util.*;
-
 public class InclusionProofData {
+    private static final Logger logger = LoggerFactory.getLogger(InclusionProof.class);
+    
     public static void getInclusionProof(LogSentinelClient client, String inclusionProofInput, String applicationId,
                                          Map<String, Object> model) {
         try {
@@ -25,7 +35,7 @@ public class InclusionProofData {
                     inclusionProofInputType = InclusionProofInputType.HASH;
                     break;
                 default:
-                    inclusionProofInputType = InclusionProofInputType.RANGE;
+                    inclusionProofInputType = InclusionProofInputType.UNPADDED_HASH;
                     break;
             }
 
@@ -36,8 +46,14 @@ public class InclusionProofData {
 
                 model.put("entryId", inclusionProofInput);
             } else if (inclusionProofInputType == InclusionProofInputType.HASH) {
-                List<AuditLogEntry> logEntries = client.getVerificationActions().getEntriesBetweenHashes(
+                List<AuditLogEntry> logEntries = Collections.emptyList();
+                
+                try {
+                    logEntries = client.getVerificationActions().getEntriesBetweenHashes(
                         inclusionProofInput, inclusionProofInput, applicationId);
+                } catch (Exception ex) {
+                    logger.warn("Failed to find hash", ex);
+                }
 
                 if (logEntries.size() > 0) {
                     standaloneHash = client.getHashActions().getHash(applicationId,
@@ -45,8 +61,10 @@ public class InclusionProofData {
 
                     model.put("entryId", logEntries.get(0).getId());
                     model.put("entryHash", logEntries.get(0).getHash());
+                } else {
+                    standaloneHash = inclusionProofInput;
                 }
-            } else if (inclusionProofInputType == InclusionProofInputType.RANGE) {
+            } else if (inclusionProofInputType == InclusionProofInputType.UNPADDED_HASH) {
                 List<AuditLogEntry> logEntries = client.getVerificationActions().getEntriesBetweenHashes(
                         StringUtil.base64StringAddPadding(inclusionProofInput),
                         StringUtil.base64StringAddPadding(inclusionProofInput), applicationId);
@@ -103,6 +121,6 @@ public class InclusionProofData {
     }
     
     public static enum InclusionProofInputType {
-        ENTRY_ID, HASH, RANGE
+        ENTRY_ID, HASH, UNPADDED_HASH
     }
 }
