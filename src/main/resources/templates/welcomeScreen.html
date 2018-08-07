@@ -354,7 +354,14 @@
 
         var treeSizeOriginal = 0;
         if ([[${treeSize}]] > 32) {
-            treeSizeOriginal = 32;
+            var noEntries = [[${treeSize}]];
+
+            while(noEntries > 32) {
+                noEntries = Math.floor(noEntries / 2);
+                console.log(noEntries);
+            }
+
+            treeSizeOriginal = noEntries;
         }
         else {
             treeSizeOriginal = [[${treeSize}]];
