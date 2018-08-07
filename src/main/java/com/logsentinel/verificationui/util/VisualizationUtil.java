@@ -137,12 +137,12 @@ public class VisualizationUtil {
         List<Node> nodesL = new ArrayList<>();
         for (Map.Entry<String, Integer> entry : map.entrySet()) {
             if (entry.getValue() <= leaves.size() - 1) {
-                nodesL.add(new Node(entry.getValue(), "L" + (entry.getValue() + 1)));
+                nodesL.add(new Node(entry.getValue(), ""));
             } else if (entry.getValue() + 1 == map.size()) {
                 nodesL.add(new Node(entry.getValue(), "MTH"));
             } else {
                 if (inclusionProof.contains(entry.getValue() + 1)) {
-                    nodesL.add(new Node(entry.getValue(), "N*"));
+                    nodesL.add(new Node(entry.getValue(), "N"));
                 }
                 else {
                     nodesL.add(new Node(entry.getValue(), "N"));

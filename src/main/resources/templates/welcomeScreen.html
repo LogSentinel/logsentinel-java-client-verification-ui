@@ -133,7 +133,7 @@
                     </div>
                 </div>
 
-                <div class="card" th:if="${signedIn && authorized && applicationId != null && treeSize > 0 && treeSize < 1000}">
+                <div class="card" th:if="${signedIn && authorized && applicationId != null && treeSize > 0 && treeSize < 1000000}">
                     <div class="card-header">
                         Merkle tree visualization
                     </div>
@@ -352,45 +352,15 @@
 
         var network = new vis.Network(container, data, options);
 
-        $.getJSON('/map?treeSize=[[${treeSize}]]&leafIndex=[[${leafIndex}]]', function(mapN) {
-            edges.add(mapN.edges);
-            nodes.add(mapN.nodes);
+        var treeSizeOriginal = 0;
+        if ([[${treeSize}]] > 32) {
+            treeSizeOriginal = 32;
+        }
+        else {
+            treeSizeOriginal = [[${treeSize}]];
+        }
 
-            for(var i in mapN.inclusionProof){
-                var node2 = nodes.get(mapN.inclusionProof[i] - 1);
-
-                node2.borderWidth = 3;
-
-                node2.color ={
-                  border: '#2B7CE9'
-                }
-
-                nodes.update(node2);
-            }
-
-            for(var i in mapN.leaves){
-                var node = nodes.get(mapN.leaves[i]);
-
-                if (leafIndex == node.id) {
-                    node.color ={
-                      background: '#a72828',
-                      border: '#5d1212'
-                    }
-                }
-                else {
-                    node.color ={
-                      background: '#0d7cab'
-                    }
-
-                }
-
-                node.font ={
-                    color: '#ffffff'
-                }
-
-                nodes.update(node);
-            }
-        });
+        getMap(treeSizeOriginal);
 
         network.on('click',  function (params) {
             var nodeId = params['nodes']['0'];
@@ -400,6 +370,57 @@
             }
         });
 
+        function getMap(treeSize, prefix) {
+            nodes.clear();
+            edges.clear();
+
+            $.getJSON('/map?treeSize=' + treeSize + '', function(mapN) {
+                edges.add(mapN.edges);
+                nodes.add(mapN.nodes);
+                /*
+                for(var i in mapN.inclusionProof){
+                    var node2 = nodes.get(mapN.inclusionProof[i] - 1);
+
+                    node2.borderWidth = 3;
+
+                    node2.color ={
+                      border: '#2B7CE9'
+                    }
+
+                    nodes.update(node2);
+                }
+                */
+                for(var i in mapN.leaves){
+                    var node = nodes.get(mapN.leaves[i]);
+
+                    if ([[${treeSize}]] > 32) {
+                        var id = "E" + node.id;
+                        nodes.add({"id":id,"label":"..."});
+                        edges.add({"from":node.id,"to":id});
+                    }
+                    else {
+                        if (leafIndex == node.id) {
+                            node.color ={
+                              background: '#a72828',
+                              border: '#5d1212'
+                            }
+                        }
+                        else {
+                            node.color ={
+                              background: '#0d7cab'
+                            }
+
+                        }
+
+                        node.font ={
+                            color: '#ffffff'
+                        }
+                    }
+
+                    nodes.update(node);
+                }
+            });
+        }
     });
     </script>
 
