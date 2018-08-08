@@ -38,7 +38,7 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="javascript:void(0);">
+                            <a class="nav-link" href="javascript:void(0);" id="consistencyLink">
                                 <span data-feather="shopping-cart"></span>
                                 Verify consistency
                             </a>
@@ -93,6 +93,19 @@
                     </div>
                 </div>
 
+                <div class="card" th:if="${signedIn && authorized && hashChain}">
+                    <div th:if="${hashChain && hashChainVerification}" class="card-header text-white bg-success">Hash chain</div>
+                    <div th:if="${hashChain && !hashChainVerification}" class="card-header text-white bg-danger">Hash chain</div>
+                    <div class="card-body">
+                        Status: <b th:if="${hashChain && hashChainVerification}"
+                                   style="color: green; font-weight: normal;">Verified</b>
+                        <b th:if="${hashChain && error != null}"
+                           style="color: red; font-weight: normal;">ERROR</b>
+
+                        <p th:if="${error != null}">Message: <b style="font-weight: normal;" th:text="${error}">0</b></p>
+                    </div>
+                </div>
+
                 <div class="card" th:if="${signedIn && authorized && inclusionProof}">
                     <div th:if="${inclusionProof && inclusionProofVerification}" class="card-header text-white bg-success">Inclusion proof</div>
                     <div th:if="${inclusionProof && !inclusionProofVerification}" class="card-header text-white bg-danger">Inclusion proof</div>
@@ -139,7 +152,7 @@
                     </div>
                     <div class="card-body">
                         <a href="javascript:void(0);" id="loadVis">Load visualization</a>
-                        <div id="merkleTreeVis" style="width: 100%; height: 800px;"></div>
+                        <div id="merkleTreeVis" style="width: 100%; height: 400px; display: none;"></div>
                     </div>
                 </div>
 
@@ -166,6 +179,25 @@
                         </div>
                         <div style="display: flex; justify-content: flex-end;">
                             <button type="button" class="btn btn-primary" data-dismiss="modal" id="checkConsistency">Check consistency</button>
+                        </div>
+                    </div>
+                </div><br>
+
+                <div class="card" th:if="${signedIn && authorized && applicationId != null && false}">
+                    <div class="card-header">
+                        Hash chain
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label for="mth">Older hash</label>
+                            <input type="text" class="form-control" id="startHash">
+                        </div>
+                        <div class="form-group">
+                            <label for="mth">Newer hash</label>
+                            <input type="text" class="form-control" id="endHash">
+                        </div>
+                        <div style="display: flex; justify-content: flex-end;">
+                            <button type="button" class="btn btn-primary" data-dismiss="modal" id="checkHashChain">Check hash chain</button>
                         </div>
                     </div>
                 </div><br>
@@ -312,6 +344,11 @@
                     "&mth=" + $('#mth').val();
         });
 
+        $("#checkHashChain").click(function() {
+            window.location=window.location.protocol + "//" + window.location.host + "/?" + filterUrl(["hash", "mth", "startHash", "endHash"]) +
+                    "&startHash=" + $('#startHash').val() + "&endHash=" + $('#endHash').val();
+        });
+
         $('#searchHash').on('keypress', function (e) {
             if (e.which === 13){
                 window.location= "/?" + filterUrl(["hash", "mth"]) +
@@ -364,6 +401,8 @@
         $('#loadVis').on('click',displayMap);
 
         function displayMap() {
+            $("#merkleTreeVis").show();
+            $('#loadVis').hide();
             var treeSizeOriginal = 0;
             if ([[${treeSize}]] > 32) {
                 var noEntries = [[${treeSize}]];
