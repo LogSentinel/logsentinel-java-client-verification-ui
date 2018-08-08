@@ -38,7 +38,7 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="javascript:void(0);">
+                            <a class="nav-link" href="javascript:void(0);" id="consistencyLink">
                                 <span data-feather="shopping-cart"></span>
                                 Verify consistency
                             </a>
@@ -152,7 +152,7 @@
                     </div>
                     <div class="card-body">
                         <a href="javascript:void(0);" id="loadVis">Load visualization</a>
-                        <div id="merkleTreeVis" style="width: 100%; height: 800px; display: none;"></div>
+                        <div id="merkleTreeVis" style="width: 100%; height: 400px; display: none;"></div>
                     </div>
                 </div>
 
@@ -402,6 +402,7 @@
 
         function displayMap() {
             $("#merkleTreeVis").show();
+            $('#loadVis').hide();
             var treeSizeOriginal = 0;
             if ([[${treeSize}]] > 32) {
                 var noEntries = [[${treeSize}]];

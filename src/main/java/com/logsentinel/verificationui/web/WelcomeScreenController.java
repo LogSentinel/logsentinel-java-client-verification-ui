@@ -112,7 +112,7 @@ public class WelcomeScreenController {
                                 model.replace("consistencyProof", true);
 
                                 ConsistencyProofData.getConsistencyProof(client, mth.get(),
-                                        "xOiKaHY62bvYLgn1csGuph5UQprE8UVBboZsvKjS6YU",
+                                        model.get("rootHash").toString(),
                                         selectedApplicationId, model);
                             }
                         }
