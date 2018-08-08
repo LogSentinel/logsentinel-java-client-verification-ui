@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
+import com.logsentinel.verificationui.data.HashChainData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -36,10 +37,13 @@ public class WelcomeScreenController {
                           @RequestParam("etherscanApiKey") Optional<String> etherscanApiKey,
                           @RequestParam("hash") Optional<String> hash,
                           @RequestParam("mth") Optional<String> mth,
+                          @RequestParam("startHash") Optional<String> startHash,
+                          @RequestParam("endHash") Optional<String> endHash,
                           Map<String, Object> model) {
         try {
             model.put("inclusionProof", false);
             model.put("consistencyProof", false);
+            model.put("hashChain", false);
             model.put("leafIndex", -1);
 
             if (!organizationId.isPresent() || !secret.isPresent()) {
@@ -109,6 +113,13 @@ public class WelcomeScreenController {
 
                                 ConsistencyProofData.getConsistencyProof(client, mth.get(),
                                         "xOiKaHY62bvYLgn1csGuph5UQprE8UVBboZsvKjS6YU",
+                                        selectedApplicationId, model);
+                            }
+                        }
+
+                        if (startHash.isPresent() && endHash.isPresent()) {
+                            if (startHash.get().length() > 0 && endHash.get().length() > 0) {
+                                HashChainData.verifyHashChain(client, startHash.get(), endHash.get(),
                                         selectedApplicationId, model);
                             }
                         }
