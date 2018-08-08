@@ -93,6 +93,19 @@
                     </div>
                 </div>
 
+                <div class="card" th:if="${signedIn && authorized && hashChain}">
+                    <div th:if="${hashChain && hashChainVerification}" class="card-header text-white bg-success">Hash chain</div>
+                    <div th:if="${hashChain && !hashChainVerification}" class="card-header text-white bg-danger">Hash chain</div>
+                    <div class="card-body">
+                        Status: <b th:if="${hashChain && hashChainVerification}"
+                                   style="color: green; font-weight: normal;">Verified</b>
+                        <b th:if="${hashChain && error != null}"
+                           style="color: red; font-weight: normal;">ERROR</b>
+
+                        <p th:if="${error != null}">Message: <b style="font-weight: normal;" th:text="${error}">0</b></p>
+                    </div>
+                </div>
+
                 <div class="card" th:if="${signedIn && authorized && inclusionProof}">
                     <div th:if="${inclusionProof && inclusionProofVerification}" class="card-header text-white bg-success">Inclusion proof</div>
                     <div th:if="${inclusionProof && !inclusionProofVerification}" class="card-header text-white bg-danger">Inclusion proof</div>
@@ -170,7 +183,7 @@
                     </div>
                 </div><br>
 
-                <div class="card" th:if="${signedIn && authorized && applicationId != null}">
+                <div class="card" th:if="${signedIn && authorized && applicationId != null && false}">
                     <div class="card-header">
                         Hash chain
                     </div>

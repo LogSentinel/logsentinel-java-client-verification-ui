@@ -119,6 +119,8 @@ public class WelcomeScreenController {
 
                         if (startHash.isPresent() && endHash.isPresent()) {
                             if (startHash.get().length() > 0 && endHash.get().length() > 0) {
+                                model.replace("hashChain", true);
+
                                 HashChainData.verifyHashChain(client, startHash.get(), endHash.get(),
                                         selectedApplicationId, model);
                             }
