@@ -58,7 +58,11 @@ public class WelcomeScreenController {
 
                 Boolean authorized = false;
 
-                etherscanApiKey.ifPresent(s -> model.put("etherscanApiKey", s));
+                if (etherscanApiKey.isPresent()) {
+                    if (etherscanApiKey.get() != "") {
+                        model.put("etherscanApiKey", etherscanApiKey.get());
+                    }
+                }
 
                 LogSentinelClientBuilder builder = LogSentinelClientBuilder
                         .create(null, organizationId.get(), secret.get());
