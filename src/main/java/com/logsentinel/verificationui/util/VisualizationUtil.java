@@ -21,6 +21,9 @@ public class VisualizationUtil {
     private static int leafIndex = 2;
 
     public static TreeMap generateMap(int treeSize) {
+        map.clear();
+        edgesL.clear();
+
         int id = 0;
 
         List<Integer> leaves = new ArrayList<>();
