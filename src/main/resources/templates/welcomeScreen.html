@@ -138,6 +138,7 @@
                         Merkle tree visualization
                     </div>
                     <div class="card-body">
+                        <a href="javascript:void(0);" id="loadVis">Load visualization</a>
                         <div id="merkleTreeVis" style="width: 100%; height: 800px;"></div>
                     </div>
                 </div>
@@ -352,23 +353,6 @@
 
         var network = new vis.Network(container, data, options);
 
-        var treeSizeOriginal = 0;
-        if ([[${treeSize}]] > 32) {
-            var noEntries = [[${treeSize}]];
-
-            while(noEntries > 32) {
-                noEntries = Math.floor(noEntries / 2);
-                console.log(noEntries);
-            }
-
-            treeSizeOriginal = noEntries;
-        }
-        else {
-            treeSizeOriginal = [[${treeSize}]];
-        }
-
-        getMap(treeSizeOriginal);
-
         network.on('click',  function (params) {
             var nodeId = params['nodes']['0'];
 
@@ -376,6 +360,27 @@
                 alert(nodes.get(nodeId).id);
             }
         });
+
+        $('#loadVis').on('click',displayMap);
+
+        function displayMap() {
+            var treeSizeOriginal = 0;
+            if ([[${treeSize}]] > 32) {
+                var noEntries = [[${treeSize}]];
+
+                while(noEntries > 32) {
+                    noEntries = Math.floor(noEntries / 2);
+                    console.log(noEntries);
+                }
+
+                treeSizeOriginal = noEntries;
+            }
+            else {
+                treeSizeOriginal = [[${treeSize}]];
+            }
+
+            getMap(treeSizeOriginal);
+        }
 
         function getMap(treeSize, prefix) {
             nodes.clear();
