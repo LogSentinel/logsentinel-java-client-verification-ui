@@ -4,11 +4,13 @@ public class EtherTreeHead {
     private String hash;
     private String timestamp;
     private String blockNumber;
+    private String txId;
 
-    public EtherTreeHead(String hash, String timestamp, String blockNumber) {
+    public EtherTreeHead(String hash, String timestamp, String blockNumber, String txId) {
         this.hash = hash;
         this.timestamp = timestamp;
         this.blockNumber = blockNumber;
+        this.txId = txId;
     }
 
     public String getHash() {
@@ -33,6 +35,14 @@ public class EtherTreeHead {
 
     public void setBlockNumber(String blockNumber) {
         this.blockNumber = blockNumber;
+    }
+
+    public String getTxId() {
+        return txId;
+    }
+
+    public void setTxId(String txId) {
+        this.txId = txId;
     }
 
     @Override

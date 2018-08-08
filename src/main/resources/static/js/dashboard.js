@@ -24,9 +24,9 @@ $(document).ready(function () {
             }
             else {
                 $.each(mths, function(i, item) {
-                    $("#etherMths tbody").append('<tr><td>' + item.hash + '</td><td>' + item.timestamp +
-                        '</td><td><a href="https://ropsten.etherscan.io/txs?block=' + item.blockNumber +
-                        '" target="_blank">' + item.blockNumber + '</a></td></tr>');
+                	$("#etherMths tbody").append('<tr><td>' + item.hash + '</td><td>' + item.timestamp + '</td>' + 
+                           '<td><a href="https://ropsten.etherscan.io/tx/' + item.txId + '" target="_blank">' + item.txId + '</a></td>' +
+                           '<td><a href="https://ropsten.etherscan.io/txs?block=' + item.blockNumber + '" target="_blank">' + item.blockNumber + '</a></td></tr>');
                 });
             }
         });

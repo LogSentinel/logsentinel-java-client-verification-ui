@@ -45,7 +45,7 @@ public class EtherscanController {
                 String hash = transaction.getInput().substring(100, transaction.getInput().length() - 2);
 
                 EtherTreeHead head = new EtherTreeHead(new String(Hex.decodeHex(hash.toCharArray()), "UTF-8"),
-                        transaction.getTimeStamp(), transaction.getBlockNumber());
+                        transaction.getTimeStamp(), transaction.getBlockNumber(), transaction.getHash());
                 if (!foundTreeHeads.contains(head)) {
                     foundTreeHeads.add(head);
                 }
